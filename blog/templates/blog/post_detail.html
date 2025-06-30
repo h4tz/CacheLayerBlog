@@ -1,0 +1,12 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div id="post-container">
+  <h1 id="post-title"></h1>
+  <div id="post-content"></div>
+</div>
+{% endblock %}
+
+<script>
+  const slug = "{{ slug }}"; // Injected from Django
+</script>

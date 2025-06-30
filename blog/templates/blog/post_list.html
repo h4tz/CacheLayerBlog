@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Blog Posts</h1>
+<div id="loading">Loading posts...</div>
+<div id="error"></div>
+<div id="post-list"></div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/blog.js' %}"></script>
+{% endblock %}

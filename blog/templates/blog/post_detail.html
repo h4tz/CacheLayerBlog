@@ -1,12 +1,15 @@
-
-{% extends "base.html" %}
+{% extends "blog/base.html" %}
+{% load static %}
 {% block content %}
-<div id="post-container">
-  <h1 id="post-title"></h1>
-  <div id="post-content"></div>
-</div>
+  <div id="post-container">
+    <h1 id="post-title">Loading...</h1>
+    <div id="post-content">Please wait...</div>
+  </div>
 {% endblock %}
 
-<script>
-  const slug = "{{ slug }}"; // Injected from Django
-</script>
+{% block script %}
+  <script>
+    const slug = "{{ slug }}";
+  </script>
+  <script src="{% static 'js/detail.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,98 @@
+/* Reset & base styling */
+body {
+  font-family: system-ui, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+/* Navigation bar */
+nav {
+  background-color: #333;
+  padding: 1rem;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* Container */
+#post-list, #post-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Blog card in list */
+.post-card {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.post-card h2 {
+  margin-bottom: 0.5rem;
+}
+
+.post-card h2 a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.post-card h2 a:hover {
+  text-decoration: underline;
+}
+
+/* Post detail */
+#post-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+#post-content {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Loader / error messages */
+#loading, #error {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+  color: #666;
+}
+
+body.dark-mode {
+  background-color: #121212;
+  color: #eee;
+}
+
+body.dark-mode nav {
+  background-color: #1e1e1e;
+}
+
+body.dark-mode #post-list,
+body.dark-mode #post-container {
+  background-color: #1e1e1e;
+  color: #eee;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .post-card {
+  border-color: #444;
+}
+
+body.dark-mode .post-card h2 a {
+  color: #90caf9;
+}
+
+body.dark-mode #loading,
+body.dark-mode #error {
+  color: #ccc;
+}

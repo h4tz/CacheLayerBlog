@@ -1,22 +1,20 @@
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof slug === "undefined") {
+    console.error("Slug not defined.");
+    return;
+  }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const postContainer = document.getElementById('post-container');
-    const titleEl = document.getElementById('post-title');
-    const contentEl = document.getElementById('post-content');
-
-    if (!postContainer || slug) return;  // exit if not on detail page
-
-    fetch(`/api/posts/${slug}/`)
+  fetch(`/api/posts/${slug}/`)
     .then(response => {
-        if (!response.ok) throw new Error('Not Found');
-        return response.json();
+      if (!response.ok) throw new Error("Post not found");
+      return response.json();
     })
     .then(post => {
-        titleEl.innerText = post.title;
-        contentEl.innerHTML = `<p>${post.content}</p>`;
+      document.getElementById("post-title").innerText = post.title;
+      document.getElementById("post-content").innerHTML = `<p>${post.content}</p>`;
     })
-    .catch(err => {
-        postContainer.innerText = 'Post not found';
-        console.error(err);
-    })
-})
+    .catch(error => {
+      document.getElementById("post-container").innerText = 'Post not found';
+      console.error(error);
+    });
+});

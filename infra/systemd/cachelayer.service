@@ -1,0 +1,17 @@
+[Unit]
+Description=CacheLayer Backend (Docker Compose)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/cachelayer
+EnvironmentFile=/opt/cachelayer/.env
+ExecStart=/usr/bin/docker compose -f infra/docker/docker-compose.prod.yml up -d
+ExecStop=/usr/bin/docker compose -f infra/docker/docker-compose.prod.yml down
+TimeoutStartSec=300
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

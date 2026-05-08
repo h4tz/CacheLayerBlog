@@ -1,0 +1,129 @@
+name: cachelayer-prod
+
+# Production-style stack for VPS deployment.
+# - Nginx terminates HTTP and reverse-proxies the app.
+# - Gunicorn runs the WSGI app behind it.
+# - Celery worker + beat handle background work.
+# - Prometheus scrapes /metrics; Grafana visualizes.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cache_blog}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [backend]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [backend]
+
+  app:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+    image: cachelayer:prod
+    restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.prod
+      RUN_MIGRATIONS: "true"
+      COLLECT_STATIC: "true"
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    expose: ["8000"]
+    networks: [backend, frontend]
+    command: >
+      gunicorn CacheLayerBlog.wsgi:application
+        --bind 0.0.0.0:8000
+        --workers ${WEB_CONCURRENCY:-3}
+        --threads 2
+        --access-logfile -
+        --error-logfile -
+        --graceful-timeout 30
+        --timeout 60
+
+  worker:
+    image: cachelayer:prod
+    restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.prod
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    networks: [backend]
+    command: ["celery", "-A", "CacheLayerBlog", "worker", "--loglevel=info", "--concurrency=2"]
+
+  beat:
+    image: cachelayer:prod
+    restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.prod
+    depends_on:
+      redis: {condition: service_healthy}
+    networks: [backend]
+    command: ["celery", "-A", "CacheLayerBlog", "beat", "--loglevel=info"]
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/conf.d:/etc/nginx/conf.d:ro
+    networks: [frontend]
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    restart: unless-stopped
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - promdata:/prometheus
+    expose: ["9090"]
+    networks: [backend]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_PASSWORD:-admin}
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/dashboards:/var/lib/grafana/dashboards:ro
+    expose: ["3000"]
+    networks: [backend]
+
+volumes:
+  pgdata:
+  redisdata:
+  promdata:
+  grafanadata:
+
+networks:
+  frontend:
+  backend:

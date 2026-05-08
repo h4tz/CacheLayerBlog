@@ -1,0 +1,47 @@
+{
+  "title": "Rail Comparison: DRF vs Ninja",
+  "uid": "clb-rail",
+  "schemaVersion": 38,
+  "version": 1,
+  "tags": ["cachelayer", "benchmark"],
+  "timezone": "browser",
+  "time": {"from": "now-30m", "to": "now"},
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "p95 latency by rail (5m)",
+      "id": 1,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(clb_rail_latency_seconds_bucket[5m])) by (le, rail))",
+          "legendFormat": "{{rail}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests / second by rail",
+      "id": 2,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(django_http_requests_total_by_view_transport_method_total[1m])) by (transport)",
+          "legendFormat": "{{transport}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx error rate",
+      "id": 3,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(django_http_responses_total_by_status_total{status=~\"5..\"}[5m]))"
+        }
+      ]
+    }
+  ]
+}

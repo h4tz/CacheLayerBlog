@@ -1,0 +1,48 @@
+name: deploy-simulation
+
+# This workflow is intentionally a *simulation*: it builds and validates the
+# production image without pushing or touching a real host. To go live, add
+# a registry push + an SSH step. The simulation makes review of every PR
+# include the deploy critical path.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build prod image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/Dockerfile
+          push: false
+          tags: cachelayer:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Compose config sanity check
+        run: |
+          docker compose -f infra/docker/docker-compose.prod.yml config > /dev/null
+
+      - name: Smoke run
+        env:
+          DJANGO_SECRET_KEY: smoke
+          DJANGO_DEBUG: "false"
+          DATABASE_URL: postgres://postgres:postgres@db:5432/cache_blog
+          REDIS_URL: redis://redis:6379/0
+        run: |
+          echo "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" > .env
+          echo "DATABASE_URL=$DATABASE_URL" >> .env
+          echo "REDIS_URL=$REDIS_URL" >> .env
+          docker compose -f infra/docker/docker-compose.prod.yml up -d db redis
+          docker compose -f infra/docker/docker-compose.prod.yml run --rm app python manage.py check

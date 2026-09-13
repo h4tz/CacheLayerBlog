@@ -25,14 +25,22 @@ client.interceptors.response.use(
       if (refreshToken) {
         try {
           const rail = localStorage.getItem('rail') || 'drf'
-          const res = await axios.post(`/api/v1/${rail}/auth/login`, null, {
-            headers: { 'Content-Type': 'application/json' },
-          })
+          const res = await axios.post(
+            `/api/v1/${rail}/auth/login`,
+            { refresh: refreshToken },
+            { headers: { 'Content-Type': 'application/json' } }
+          )
+          const { access } = res.data
+          localStorage.setItem('access_token', access)
+          originalRequest.headers.Authorization = `Bearer ${access}`
+          return client(originalRequest)
         } catch {
           localStorage.removeItem('access_token')
           localStorage.removeItem('refresh_token')
           window.location.href = '/login'
         }
+      } else {
+        window.location.href = '/login'
       }
     }
 

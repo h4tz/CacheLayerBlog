@@ -1,20 +1,22 @@
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof slug === "undefined") {
-    console.error("Slug not defined.");
-    return;
-  }
+document.addEventListener('DOMContentLoaded', function () {
+  var slug = document.getElementById('post-detail')?.dataset?.slug
+  if (!slug) return
 
-  fetch(`/api/posts/${slug}/`)
-    .then(response => {
-      if (!response.ok) throw new Error("Post not found");
-      return response.json();
+  fetch('/api/posts/' + slug + '/')
+    .then(function (res) {
+      if (!res.ok) throw new Error('Post not found')
+      return res.json()
     })
-    .then(post => {
-      document.getElementById("post-title").innerText = post.title;
-      document.getElementById("post-content").innerHTML = `<p>${post.content}</p>`;
+    .then(function (post) {
+      var container = document.getElementById('post-detail')
+      container.innerHTML =
+        '<h1>' + post.title + '</h1>' +
+        '<small>' + new Date(post.created_at).toLocaleDateString() + '</small>' +
+        '<div>' + post.content + '</div>'
     })
-    .catch(error => {
-      document.getElementById("post-container").innerText = 'Post not found';
-      console.error(error);
-    });
-});
+    .catch(function (err) {
+      console.error('Failed to load post:', err)
+      var container = document.getElementById('post-detail')
+      if (container) container.innerHTML = '<p>Post not found.</p>'
+    })
+})

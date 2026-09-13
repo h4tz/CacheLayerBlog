@@ -1,29 +1,61 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+*.whl
 
+# Virtual environments
 .venv/
 venv/
 env/
 
+# Environment variables
 .env
 .env.*
 !.env.example
 
+# Database
 *.sqlite3
 db.sqlite3-journal
 
+# Static files
 staticfiles/
 
+# Testing / Coverage
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
 htmlcov/
+coverage.xml
+*.cover
 
+# Benchmarks
 benchmarks/reports/
 
+# IDEs
 .idea/
 .vscode/
 *.iml
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
